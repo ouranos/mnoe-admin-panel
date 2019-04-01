@@ -1,6 +1,6 @@
 @App.controller 'DashboardController',
   ($scope, $cookies, $sce, MnoeMarketplace, MnoErrorsHandler, MnoeCurrentUser, MnoeAdminConfig,
-    STAFF_PAGE_AUTH, REVIEWS_CONFIG, QUESTIONS_CONFIG) ->
+    ImpacMainSvc, ImpacRoutes, ImpacTheming, STAFF_PAGE_AUTH, REVIEWS_CONFIG, QUESTIONS_CONFIG) ->
     'ngInject'
     main = this
 
@@ -27,5 +27,17 @@
 
     main.exit = ->
       MnoeCurrentUser.logout()
+
+    main.route = ->
+      # ImpacRoutes.dashboards.create(123)
+      ImpacRoutes.dashboards.copy(123)
+
+      # ImpacRoutes.getConfig()
+
+    main.impacMainConfig = ->
+      ImpacMainSvc.config
+
+    main.impacConfig = ->
+      ImpacTheming.get()
 
     return

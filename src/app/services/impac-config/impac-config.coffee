@@ -1,4 +1,4 @@
-@App.service 'ImpacConfigSvc' , ($state, $stateParams, $log, $q, MnoeCurrentUser, MnoeOrganizations, ImpacMainSvc, ImpacRoutes, ImpacTheming, IMPAC_CONFIG) ->
+@App.service 'ImpacConfigSvc' , ($state, $stateParams, $log, $q, MnoeAdminConfig, MnoeCurrentUser, MnoeOrganizations, ImpacMainSvc, ImpacRoutes, ImpacTheming, IMPAC_CONFIG) ->
   _self = @
 
   # Keep track of dashboard designer mode
@@ -34,16 +34,37 @@
       )
     else if $stateParams.orgId
       # Staff dashboard mode, returns the current organization
-      $log.info('getOrganizations', 'Loading customer org')
-      MnoeOrganizations.get($stateParams.orgId).then(
-        (response) ->
-          currentOrganization = response.data.plain()
-          angular.extend(currentOrganization, {acl: defaultACL})
-          $q.resolve(
-            organizations: [currentOrganization],
-            currentOrgId: currentOrganization.id
-          )
+
+      # http://localhost:7001/mnoe/jpi/v1/admin/organizations?account_manager_id=1566&limit=10&offset=0&order_by=created_at.desc
+
+      MnoeCurrentUser.getUser().then( ->
+        params = if MnoeAdminConfig.isAccountManagerEnabled()
+          {sub_tenant_id: MnoeCurrentUser.user.mnoe_sub_tenant_id, account_manager_id: MnoeCurrentUser.user.id}
+        else
+          {}
+
+        # TODO: problem with pagination (only returns first 30 orgs)
+        MnoeOrganizations.list(30, 0, 'name', params).then(
+          (response) ->
+            organizations =  (angular.extend(org, {acl: defaultACL}) for org in response.data)
+
+            $q.resolve(
+              organizations: organizations,
+              currentOrgId: parseInt($stateParams.orgId)
+            )
+        )
       )
+
+#      $log.info('getOrganizations', 'Loading customer org')
+#      MnoeOrganizations.get($stateParams.orgId).then(
+#        (response) ->
+#          currentOrganization = response.data.plain()
+#          angular.extend(currentOrganization, {acl: defaultACL})
+#          $q.resolve(
+#            organizations: [currentOrganization],
+#            currentOrgId: currentOrganization.id
+#          )
+#      )
     else
       $log.warn('ImpacConfigSvc.getOrganizations: Designer disabled and orgId specified')
       $log.error(err = { message: "Unable to retrieve user organizations" })

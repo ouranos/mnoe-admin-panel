@@ -65,5 +65,15 @@
   <mno-admin-content>
       <!-- Main Content -->
       <div ui-view></div>
+
+    <hr/>
+    <div class="row">
+      <div class="col-md-6">
+        Routes: <pre>{{ main.route() | json }}</pre>
+        mainConfig: <pre>{{ main.impacMainConfig() | json }}</pre>
+      </div>
+
+      <div class="col-md-6">Impac Config: <pre>{{ main.impacConfig() | json }}</pre></div>
+    </div>
   </mno-admin-content>
 </mno-admin>
